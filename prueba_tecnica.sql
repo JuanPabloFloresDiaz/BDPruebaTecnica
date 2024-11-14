@@ -1,49 +1,54 @@
--- Eliminar la base si existe
-DROP DATABASE if EXISTS db_prueba_tecnica;
--- Crear la base de datos si no existe
-CREATE DATABASE if NOT EXISTS db_prueba_tecnica;
--- Usar la base de datos
+-- Eliminar la base de datos si ya existe, para evitar duplicados al recrear
+DROP DATABASE IF EXISTS db_prueba_tecnica;
+
+-- Crear la base de datos si no existe, para asegurar que se tiene un espacio de trabajo
+CREATE DATABASE IF NOT EXISTS db_prueba_tecnica;
+
+-- Seleccionar la base de datos a utilizar para las operaciones posteriores
 USE db_prueba_tecnica;
 
--- Crear la tabla de usuarios
+-- Crear la tabla de usuarios con los campos necesarios
 CREATE TABLE tb_usuarios(
-  id_usuario INT AUTO_INCREMENT PRIMARY KEY, -- llave primaria auto incremental
-  nombre_usuario VARCHAR(100) NOT NULL,
+  id_usuario INT AUTO_INCREMENT PRIMARY KEY, -- Identificador único de cada usuario (llave primaria)
+  nombre_usuario VARCHAR(100) NOT NULL, -- Nombre del usuario, obligatorio y con una restricción de unicidad
   CONSTRAINT uq_nombre_usuario_unico UNIQUE(nombre_usuario),
-  correo_electronico_usuario VARCHAR(100) NOT NULL,
+  correo_electronico_usuario VARCHAR(100) NOT NULL, -- Correo electrónico del usuario, obligatorio y único
   CONSTRAINT uq_correo_electronico_usuario_unico UNIQUE(correo_electronico_usuario),
-  CONSTRAINT chk_correo_electronico_usuario_formato CHECK (correo_electronico_usuario REGEXP '^[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}$'),
-  clave_usuario VARCHAR(100) NOT NULL,
-  fecha_registro_usuario DATETIME DEFAULT NOW(),
-  telefono_usuario VARCHAR(15) NOT NULL,
-  dui_usuario VARCHAR(10) NOT NULL,
+  CONSTRAINT chk_correo_electronico_usuario_formato CHECK (correo_electronico_usuario REGEXP '^[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}$'), -- Verificación de formato de correo
+  clave_usuario VARCHAR(100) NOT NULL, -- Contraseña del usuario, obligatoria
+  fecha_registro_usuario DATETIME DEFAULT NOW(), -- Fecha y hora de registro, con valor predeterminado a la fecha actual
+  telefono_usuario VARCHAR(15) NOT NULL, -- Teléfono del usuario, obligatorio
+  dui_usuario VARCHAR(10) NOT NULL, -- DUI del usuario, obligatorio y único
   CONSTRAINT uq_dui_usuario_unico UNIQUE(dui_usuario),
-  fecha_nacimiento_usuario DATE NOT NULL,
-  estado_usuario BOOLEAN DEFAULT 1,
-  direccion_usuario VARCHAR(200)
+  fecha_nacimiento_usuario DATE NOT NULL, -- Fecha de nacimiento, obligatoria
+  estado_usuario BOOLEAN DEFAULT 1, -- Estado del usuario, con valor predeterminado de activo (1)
+  direccion_usuario VARCHAR(200) -- Dirección del usuario, opcional
 );
 
 DELIMITER ;
--- Vista para la tabla usuarios
+-- Comando para eliminar la vista para la tabla usuarios
 DROP VIEW IF EXISTS vista_tabla_usuarios;
 DELIMITER $$
+-- Crear la vista para mostrar información de usuarios de forma organizada
 CREATE VIEW vista_tabla_usuarios AS
-SELECT id_usuario AS 'ID',
-nombre_usuario AS 'NOMBRE',
-correo_electronico_usuario AS 'CORREO',
-telefono_usuario AS 'TELÉFONO',
-dui_usuario AS 'DUI',
-direccion_usuario AS 'DIRECCIÓN',
-fecha_nacimiento_usuario AS 'NACIMIENTO',
-fecha_registro_usuario AS 'REGISTRO',
-    CASE
-        WHEN estado_usuario = 1 THEN 'Activo'
-        WHEN estado_usuario = 0 THEN 'Bloqueado'
-    END AS 'ESTADO',
-estado_usuario AS 'VALOR_ESTADO'
+SELECT 
+  id_usuario AS 'ID',
+  nombre_usuario AS 'NOMBRE',
+  correo_electronico_usuario AS 'CORREO',
+  telefono_usuario AS 'TELÉFONO',
+  dui_usuario AS 'DUI',
+  direccion_usuario AS 'DIRECCIÓN',
+  fecha_nacimiento_usuario AS 'NACIMIENTO',
+  fecha_registro_usuario AS 'REGISTRO',
+  CASE
+    WHEN estado_usuario = 1 THEN 'Activo' -- Mostrar 'Activo' cuando el estado es 1
+    WHEN estado_usuario = 0 THEN 'Bloqueado' -- Mostrar 'Bloqueado' cuando el estado es 0
+  END AS 'ESTADO',
+  estado_usuario AS 'VALOR_ESTADO' -- Valor original del estado
 FROM tb_usuarios;
 $$
 
+-- Comando para eliminar el procedimiento para insertar usuarios
 DROP PROCEDURE IF EXISTS insertar_usuario;
 DELIMITER $$
 CREATE PROCEDURE insertar_usuario(
@@ -97,6 +102,7 @@ END;
 $$
 DELIMITER ;
 
+-- Comando para eliminar el procedimiento para actualizar usuarios
 DROP PROCEDURE IF EXISTS actualizar_usuario;
 DELIMITER $$
 CREATE PROCEDURE actualizar_usuario(
@@ -161,6 +167,7 @@ END;
 $$
 
 DELIMITER ;
+-- Comando para eliminar el procedimiento para eliminar usuarios
 DROP PROCEDURE IF EXISTS eliminar_usuario;
 DELIMITER $$
 CREATE PROCEDURE eliminar_usuario(
@@ -186,9 +193,7 @@ END;
 $$
 DELIMITER ;
 
-
-
-
+-- Comando para eliminar el procedimiento para actualizar estados de usuarios
 DROP PROCEDURE IF EXISTS actualizar_estado_usuario;
 DELIMITER $$
 CREATE PROCEDURE actualizar_estado_usuario(
@@ -216,5 +221,3 @@ $$
 DELIMITER ;
 
 SELECT * FROM vista_tabla_usuarios;
-
-
