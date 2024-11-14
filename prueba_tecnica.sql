@@ -188,20 +188,32 @@ DELIMITER ;
 
 
 
+
 DROP PROCEDURE IF EXISTS actualizar_estado_usuario;
 DELIMITER $$
 CREATE PROCEDURE actualizar_estado_usuario(
     IN p_id_usuario INT
 )
 BEGIN
-    -- Actualizar el estado del usuario alternando su valor
-    UPDATE tb_usuarios
-    SET estado_usuario = NOT estado_usuario
+    DECLARE user_exists INT;
+
+    -- Verificar si el usuario existe
+    SELECT COUNT(*) INTO user_exists 
+    FROM tb_usuarios 
     WHERE id_usuario = p_id_usuario;
+
+    IF user_exists = 0 THEN
+        -- Si no existe, generar un error
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El usuario no existe';
+    ELSE
+        -- Si existe, proceder a actualizar el estado del usuario alternando su valor
+        UPDATE tb_usuarios
+        SET estado_usuario = NOT estado_usuario
+        WHERE id_usuario = p_id_usuario;
+    END IF;
 END;
 $$
 DELIMITER ;
-
 
 SELECT * FROM vista_tabla_usuarios;
 
